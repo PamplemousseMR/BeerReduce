@@ -17,6 +17,12 @@ These instructions will get you a copy of the project up and running on your loc
 
 - [Hadoop](https://hadoop.apache.org/) : The Apache Hadoop software library is a framework that allows for the distributed processing of large data sets across clusters of computers using simple programming models.
 
+### Compile
+
+Compile using : `compile.bat JAVA_HOME`, `JAVA_HOME` is a parameter indicating the path of Java. We need this because Hadoop work only if Java is located to a directory without space or special character.
+
+Launch the program by using : `launch.bat JAVA_HOME`.
+
 ## Authors
 
 * **MANCIAUX Romain** - *Initial work* - [PamplemousseMR](https://github.com/PamplemousseMR).
