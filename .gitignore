@@ -3,3 +3,5 @@
 .idea/*
 output/*
 BeerReduceResult
+
+hadoop-2\.8\.0/logs/
