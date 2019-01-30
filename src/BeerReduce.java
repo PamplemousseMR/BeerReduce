@@ -32,35 +32,44 @@ public class BeerReduce {
   private static final class Store implements Writable {
 
     public Store() {
-      m_int = 0;
-      m_text = "";
+      m_sugar = 0;
+      m_brew = "";
+      m_beer = "";
     }
 
-    public Store(int _int, String _text) {
-      m_int = _int;
-      m_text = _text;
+    public Store(int _int, String _text, String _beer) {
+      m_sugar = _int;
+      m_brew = _text;
+      m_beer = _beer;
     }
 
-    public int getInt() {
-      return m_int;
+    public int getSugar() {
+      return m_sugar;
     }
 
-    public String getText() {
-      return m_text;
+    public String getBrew() {
+      return m_brew;
+    }
+
+    public String getBeer() {
+      return m_beer;
     }
 
     public void readFields(DataInput _in) throws IOException {
-        m_int = _in.readInt();
-        m_text = _in.readLine();
+        m_sugar = _in.readInt();
+        m_brew = _in.readLine();
+        m_beer = _in.readLine();
     }
 
     public void write(DataOutput _out) throws IOException {
-        _out.writeInt(m_int);
-        _out.writeBytes(m_text);
+        _out.writeInt(m_sugar);
+        _out.writeBytes(m_brew + "\n");
+        _out.writeBytes(m_beer);
     }
 
-    private int m_int;
-    private String m_text;
+    private int m_sugar;
+    private String m_brew;
+    private String m_beer;
 
   }
 
@@ -82,7 +91,9 @@ public class BeerReduce {
 
   private final static String s_SPLIT = ";";
   private final static String s_INTERNAL_SPLIT = ",";
+  private final static String s_SUB_SPLIT = "/";
 
+  private final static int s_BEER_NAME = 1;
   private final static int s_BEER_STYLE = 3;
   private final static int s_BEER_SUGAR = 14;
   private final static int s_BEER_BREWING = 17;
@@ -142,13 +153,13 @@ public class BeerReduce {
   //=================================================================================================
   // First job
   //=================================================================================================
-  public static class StyleMapper extends Mapper<Object, Text, Text, Store>{
+  public static class StyleMapper extends Mapper<Object, Text, Text, Store> {
       
     public void map(Object _key, Text _value, Context _context) throws IOException, InterruptedException {
       String[] line = _value.toString().split(s_SPLIT);
       try {
         int sugar = Integer.parseInt(line[s_BEER_SUGAR]);
-        _context.write(new Text(BeerFamily.toString(BeerFamily.isTypeOf(line[s_BEER_STYLE].toUpperCase()))), new Store(sugar, line[s_BEER_BREWING]));
+        _context.write(new Text(BeerFamily.toString(BeerFamily.isTypeOf(line[s_BEER_STYLE].toUpperCase()))), new Store(sugar, line[s_BEER_BREWING], line[s_BEER_NAME]));
       } catch(Throwable _e) {
       }
     }
@@ -164,11 +175,11 @@ public class BeerReduce {
       String brewing = "";
 
       for (Store val : values) {
-        if(val.getInt() == max) {
-          brewing += (val.getText() + s_INTERNAL_SPLIT);
-        } else if(val.getInt() > max){
-          max = val.getInt();
-          brewing = (s_SPLIT + val.getText() + s_INTERNAL_SPLIT);
+        if(val.getSugar() == max) {
+          brewing += (val.getBrew() + s_SUB_SPLIT + val.getBeer() + s_INTERNAL_SPLIT);
+        } else if(val.getSugar() > max){
+          max = val.getSugar();
+          brewing = (s_SPLIT + val.getBrew() + s_SUB_SPLIT + val.getBeer() + s_INTERNAL_SPLIT);
         }
       }
 
@@ -196,20 +207,24 @@ public class BeerReduce {
     private IntWritable result = new IntWritable();
 
     public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-      ArrayList<String> arr = new ArrayList();
+      ArrayList<String> brew = new ArrayList();
+      ArrayList<String> beer = new ArrayList();
       for (Text val : values) {
-          arr.add(val.toString());
+          brew.add(val.toString().split(s_SUB_SPLIT)[0]);
+          beer.add(val.toString().split(s_SUB_SPLIT)[1]);
       }
 
       String bestBrewing = "";
       int max = 0;
-      for(String s : arr)
+      for(int i=0 ; i<brew.size() ; ++i)
       {
-        int tmp = Collections.frequency(arr,s);
+        int tmp = Collections.frequency(brew, brew.get(i));
         if(tmp > max)
         {
           max = tmp;
-          bestBrewing = s;
+          bestBrewing = brew.get(i) + " : " + beer.get(i);
+        } else if(tmp == max) {
+          bestBrewing += ", " + beer.get(i);
         }
       }
 
@@ -281,12 +296,11 @@ public class BeerReduce {
 
       // Run the job and wait for it
       success = job.waitForCompletion(true);
+      deleteDirectory(java.nio.file.Paths.get(tmpDir.toString()).toFile());
     } else {
       deleteDirectory(java.nio.file.Paths.get(tmpDir.toString()).toFile());
       System.exit(s_FIRST_JOB_ERROR);
     }
-
-    deleteDirectory(java.nio.file.Paths.get(tmpDir.toString()).toFile());
 
     if(success) {
       System.exit(0);
