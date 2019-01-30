@@ -2,8 +2,11 @@ import java.io.IOException;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.File;
 
 import java.util.StringTokenizer;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -23,6 +26,9 @@ import org.apache.hadoop.util.GenericOptionsParser;
 
 public class BeerReduce {
 
+  //=================================================================================================
+  // Utils
+  //=================================================================================================
   private static final class Store implements Writable {
 
     public Store() {
@@ -58,6 +64,22 @@ public class BeerReduce {
 
   }
 
+  static boolean deleteDirectory(File _dir) {
+    File[] allContents = _dir.listFiles();
+    if (allContents != null) {
+        for (File file : allContents) {
+            deleteDirectory(file);
+        }
+    }
+    return _dir.delete();
+  }
+
+  private final static int s_ARG_ERROR = 1;
+  private final static int s_FIRST_JOB_ERROR = 2;
+  private final static int s_SECOND_JOB_ERROR = 3;
+
+  private final static String s_TMP_REDUCER_SUFFIX = "_tmp";
+
   private final static String s_SPLIT = ";";
   private final static String s_INTERNAL_SPLIT = ",";
 
@@ -65,6 +87,9 @@ public class BeerReduce {
   private final static int s_BEER_SUGAR = 14;
   private final static int s_BEER_BREWING = 17;
 
+  //=================================================================================================
+  // First job
+  //=================================================================================================
   public static class StyleMapper extends Mapper<Object, Text, Text, Store>{
       
     public void map(Object _key, Text _value, Context _context) throws IOException, InterruptedException {
@@ -100,36 +125,122 @@ public class BeerReduce {
 
   }
 
+  //=================================================================================================
+  // Second job
+  //=================================================================================================
+  public static class StyleRemapper extends Mapper<Object, Text, Text, Text>{
+      
+    public void map(Object _key, Text _value, Context _context) throws IOException, InterruptedException {
+      String[] line = _value.toString().split(s_SPLIT);
+      String[] brewing = line[1].split(s_INTERNAL_SPLIT);
+      for(String brew : brewing)
+        _context.write(new Text(line[0]), new Text(brew));
+    }
+
+  }
+
+  public static class BestBrewingReducer extends Reducer<Text,Text,Text,Text> {
+    
+    private IntWritable result = new IntWritable();
+
+    public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+      ArrayList<String> arr = new ArrayList();
+      for (Text val : values) {
+          arr.add(val.toString());
+      }
+
+      String bestBrewing = "";
+      int max = 0;
+      for(String s : arr)
+      {
+        int tmp = Collections.frequency(arr,s);
+        if(tmp > max)
+        {
+          max = tmp;
+          bestBrewing = s;
+        }
+      }
+
+      context.write(key, new Text(bestBrewing));
+    }
+
+  }
+
+  //=================================================================================================
+  // Main
+  //=================================================================================================
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
     String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 
     if (otherArgs.length != 2) {
       System.err.println("Usage: BeerReduce <in> <out>");
-      System.exit(2);
+      System.exit(s_ARG_ERROR);
     }
 
-    // Create the job
-    Job job = new Job(conf, "Beer");
-    job.setJarByClass(BeerReduce.class);
+    Path tmpDir = new Path(otherArgs[1]+s_TMP_REDUCER_SUFFIX);
+    boolean success;
+    {
+      // Create the job
+      Job job = new Job(conf, "BeerBrewingList");
+      job.setJarByClass(BeerReduce.class);
 
-    // Mapper and reducer classes
-    job.setMapperClass(StyleMapper.class);
-    job.setReducerClass(BrewingReducer.class);
+      // Mapper and reducer classes
+      job.setMapperClass(StyleMapper.class);
+      job.setReducerClass(BrewingReducer.class);
 
-    // Mapper output
-    job.setMapOutputKeyClass(Text.class);
-    job.setMapOutputValueClass(Store.class);
+      // Mapper output
+      job.setMapOutputKeyClass(Text.class);
+      job.setMapOutputValueClass(Store.class);
 
-    // Reducer output
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(Text.class);
+      // Reducer output
+      job.setOutputKeyClass(Text.class);
+      job.setOutputValueClass(Text.class);
 
-    // Set input and output data
-    FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
-    FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
+      // Set input and output data
+      FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
+      FileOutputFormat.setOutputPath(job, tmpDir);
 
-    // Run the job and wait for it
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
+      // Run the job and wait for it
+      success = job.waitForCompletion(true);
+    }
+
+    if(success)
+    {
+      // Create the job
+      Job job = new Job(conf, "BeerBrewingBest");
+      job.setJarByClass(BeerReduce.class);
+
+      // Mapper and reducer classes
+      job.setMapperClass(StyleRemapper.class);
+      job.setReducerClass(BestBrewingReducer.class);
+
+      // Mapper output
+      job.setMapOutputKeyClass(Text.class);
+      job.setMapOutputValueClass(Text.class);
+
+      // Reducer output
+      job.setOutputKeyClass(Text.class);
+      job.setOutputValueClass(Text.class);
+
+      // Set input and output data
+      FileInputFormat.addInputPath(job, tmpDir);
+      FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
+
+      // Run the job and wait for it
+      success = job.waitForCompletion(true);
+    } else {
+      deleteDirectory(java.nio.file.Paths.get(tmpDir.toString()).toFile());
+      System.exit(s_FIRST_JOB_ERROR);
+    }
+
+    deleteDirectory(java.nio.file.Paths.get(tmpDir.toString()).toFile());
+
+    if(success) {
+      System.exit(0);
+    } else {
+      System.exit(s_SECOND_JOB_ERROR);
+    }
   }
+
 }
