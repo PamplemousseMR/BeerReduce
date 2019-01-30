@@ -87,6 +87,58 @@ public class BeerReduce {
   private final static int s_BEER_SUGAR = 14;
   private final static int s_BEER_BREWING = 17;
 
+  public static enum BeerFamily
+  {
+    ALE,
+    IPA,
+    STOUT,
+    LAGER,
+    PORTER,
+    BITTER,
+    CIDER,
+    UNKNOWN;
+
+    public static BeerFamily isTypeOf(String _s) {
+        if (_s.contains("ALE")) {
+            return ALE;
+        } else if (_s.contains("IPA")) {
+            return IPA;
+        } else if (_s.contains("STOUT")) {
+            return STOUT;
+        } else if (_s.contains("LAGER")) {
+            return LAGER;
+        } else if (_s.contains("PORTER")) {
+            return PORTER;
+        } else if (_s.contains("BITTER")) {
+            return BITTER;
+        } else if (_s.contains("CIDER")) {
+            return CIDER;
+        }
+        return UNKNOWN;
+    }
+
+    public static String toString(BeerFamily _bf) {
+        switch(_bf)
+        {
+          case ALE:
+            return "ALE";
+          case IPA:
+            return "IPA";
+          case STOUT:
+            return "STOUT";
+          case LAGER:
+            return "LAGER";
+          case PORTER:
+            return "PORTER";
+          case BITTER:
+            return "BITTER";
+          case CIDER:
+            return "CIDER";
+        }
+        return "UNKNOWN";
+    }
+  };
+
   //=================================================================================================
   // First job
   //=================================================================================================
@@ -96,7 +148,7 @@ public class BeerReduce {
       String[] line = _value.toString().split(s_SPLIT);
       try {
         int sugar = Integer.parseInt(line[s_BEER_SUGAR]);
-        _context.write(new Text(line[s_BEER_STYLE]), new Store(sugar, line[s_BEER_BREWING]));
+        _context.write(new Text(BeerFamily.toString(BeerFamily.isTypeOf(line[s_BEER_STYLE].toUpperCase()))), new Store(sugar, line[s_BEER_BREWING]));
       } catch(Throwable _e) {
       }
     }
