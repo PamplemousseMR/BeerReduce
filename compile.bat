@@ -9,3 +9,7 @@ md beerReduceBin
 call hadoop com.sun.tools.javac.Main -d beerReduceBin src/BestIPA.java
 
 jar -cvf beerReduceBin/bestIPA.jar -C beerReduceBin/ .
+
+call hadoop com.sun.tools.javac.Main -d beerReduceBin src/DarkestBeer.java
+
+jar -cvf beerReduceBin/darkestBeer.jar -C beerReduceBin/ .

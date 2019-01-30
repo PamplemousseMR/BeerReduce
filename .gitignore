@@ -2,6 +2,9 @@
 *.jar
 .idea/*
 output/*
-BeerReduceResult
+
+bestIPAResult/
+darkestBeerResult/
 
 hadoop-2\.8\.0/logs/
+

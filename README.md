@@ -3,7 +3,7 @@
 The goal of this project create an hadoop application on this dataset: https://www.kaggle.com/jtrofe/beer-recipes#recipeData.csv.
 We try to answer the following questions:
 - For each beer family (API, ALE), with which brewing methods do we get the sweetest beer?
-- Which darkest beers consumed the least amount of water per pound of grain?
+- For each beers's color, which one consumed the least amount of water per pound of grain?
 
 ## Travis
 
