@@ -6,6 +6,6 @@ set Path=%Path%;%HADOOP_HOME%\bin;%JAVA_HOME%\bin
 rd /s /q beerReduceBin
 md beerReduceBin
 
-call hadoop com.sun.tools.javac.Main -d beerReduceBin src/BeerReduce.java
+call hadoop com.sun.tools.javac.Main -d beerReduceBin src/BestIPA.java
 
-jar -cvf beerReduceBin/beerReduce.jar -C beerReduceBin/ .
+jar -cvf beerReduceBin/bestIPA.jar -C beerReduceBin/ .

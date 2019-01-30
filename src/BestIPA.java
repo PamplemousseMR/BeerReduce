@@ -12,7 +12,6 @@ import org.apache.hadoop.conf.Configuration;
 
 import org.apache.hadoop.fs.Path;
 
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -24,7 +23,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import org.apache.hadoop.util.GenericOptionsParser;
 
-public class BeerReduce {
+public class BestIPA {
 
   //=================================================================================================
   // Utils
@@ -168,13 +167,11 @@ public class BeerReduce {
   
   public static class BrewingReducer extends Reducer<Text,Store,Text,Text> {
     
-    private IntWritable result = new IntWritable();
-
-    public void reduce(Text key, Iterable<Store> values, Context context) throws IOException, InterruptedException {
+    public void reduce(Text _key, Iterable<Store> _values, Context _context) throws IOException, InterruptedException {
       int max = 0;
       String brewing = "";
 
-      for (Store val : values) {
+      for (Store val : _values) {
         if(val.getSugar() == max) {
           brewing += (val.getBrew() + s_SUB_SPLIT + val.getBeer() + s_INTERNAL_SPLIT);
         } else if(val.getSugar() > max){
@@ -183,7 +180,7 @@ public class BeerReduce {
         }
       }
 
-      context.write(key, new Text(brewing));
+      _context.write(_key, new Text(brewing));
     }
 
   }
@@ -204,12 +201,10 @@ public class BeerReduce {
 
   public static class BestBrewingReducer extends Reducer<Text,Text,Text,Text> {
     
-    private IntWritable result = new IntWritable();
-
-    public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+    public void reduce(Text _key, Iterable<Text> _values, Context _context) throws IOException, InterruptedException {
       ArrayList<String> brew = new ArrayList();
       ArrayList<String> beer = new ArrayList();
-      for (Text val : values) {
+      for (Text val : _values) {
           brew.add(val.toString().split(s_SUB_SPLIT)[0]);
           beer.add(val.toString().split(s_SUB_SPLIT)[1]);
       }
@@ -228,7 +223,7 @@ public class BeerReduce {
         }
       }
 
-      context.write(key, new Text(bestBrewing));
+      _context.write(_key, new Text(bestBrewing));
     }
 
   }
@@ -241,7 +236,7 @@ public class BeerReduce {
     String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 
     if (otherArgs.length != 2) {
-      System.err.println("Usage: BeerReduce <in> <out>");
+      System.err.println("Usage: BestIPA <in> <out>");
       System.exit(s_ARG_ERROR);
     }
 
@@ -250,7 +245,7 @@ public class BeerReduce {
     {
       // Create the job
       Job job = new Job(conf, "BeerBrewingList");
-      job.setJarByClass(BeerReduce.class);
+      job.setJarByClass(BestIPA.class);
 
       // Mapper and reducer classes
       job.setMapperClass(StyleMapper.class);
@@ -276,7 +271,7 @@ public class BeerReduce {
     {
       // Create the job
       Job job = new Job(conf, "BeerBrewingBest");
-      job.setJarByClass(BeerReduce.class);
+      job.setJarByClass(BestIPA.class);
 
       // Mapper and reducer classes
       job.setMapperClass(StyleRemapper.class);
