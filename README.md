@@ -5,10 +5,6 @@ We try to answer the following questions:
 - For each beer family (API, ALE), with which brewing methods do we get the sweetest beer?
 - For each beers's color, which one consumed the least amount of water per pound of grain?
 
-## Travis
-
-[![Build Status](https://travis-ci.com/PamplemousseMR/BeerReduce.svg?branch=master)](https://travis-ci.com/PamplemousseMR/BeerReduce)
-
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -17,11 +13,14 @@ These instructions will get you a copy of the project up and running on your loc
 
 - [Hadoop](https://hadoop.apache.org/) : The Apache Hadoop software library is a framework that allows for the distributed processing of large data sets across clusters of computers using simple programming models.
 
-### Compile
+### Compilation
 
 Compile using : `compile.bat JAVA_HOME`, `JAVA_HOME` is a parameter indicating the path of Java. We need this because Hadoop work only if Java is located to a directory without space or special character.
 
-Launch the program by using : `launch.bat JAVA_HOME`.
+### Use
+
+Launch the program by using : `launchBestIPA.bat JAVA_HOME`. This launcher allow to answer the first question.
+Launch the program by using : `launchDarkestBeer.bat JAVA_HOME`. This launcher allow to answer the second question.
 
 ## Authors
 
