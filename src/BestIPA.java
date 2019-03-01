@@ -1,10 +1,8 @@
 import java.io.IOException;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.io.File;
 
-import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -88,17 +86,17 @@ public class BestIPA {
 
   private final static String s_TMP_REDUCER_SUFFIX = "_tmp";
 
-  private final static String s_SPLIT = ";";
-  private final static String s_INTERNAL_SPLIT = ",";
-  private final static String s_SUB_SPLIT = "/";
+  private final static String s_CSV_SPLIT = ";";
+  private final static String s_SPLIT = ";;";
+  private final static String s_INTERNAL_SPLIT = ",,";
+  private final static String s_SUB_SPLIT = "//";
 
   private final static int s_BEER_NAME = 1;
   private final static int s_BEER_STYLE = 3;
   private final static int s_BEER_SUGAR = 14;
   private final static int s_BEER_BREWING = 17;
 
-  public static enum BeerFamily
-  {
+  public  enum BeerFamily {
     ALE,
     IPA,
     STOUT,
@@ -147,15 +145,15 @@ public class BestIPA {
         }
         return "UNKNOWN";
     }
-  };
+  }
 
   //=================================================================================================
   // First job
   //=================================================================================================
-  public static class StyleMapper extends Mapper<Object, Text, Text, Store> {
-      
+  private static class StyleMapper extends Mapper<Object, Text, Text, Store> {
+
     public void map(Object _key, Text _value, Context _context) throws IOException, InterruptedException {
-      String[] line = _value.toString().split(s_SPLIT);
+      String[] line = _value.toString().split(s_CSV_SPLIT);
       try {
         int sugar = Integer.parseInt(line[s_BEER_SUGAR]);
         _context.write(new Text(BeerFamily.toString(BeerFamily.isTypeOf(line[s_BEER_STYLE].toUpperCase()))), new Store(sugar, line[s_BEER_BREWING], line[s_BEER_NAME]));
@@ -164,9 +162,9 @@ public class BestIPA {
     }
 
   }
-  
-  public static class BrewingReducer extends Reducer<Text,Store,Text,Text> {
-    
+
+  private static class BrewingReducer extends Reducer<Text,Store,Text,Text> {
+
     public void reduce(Text _key, Iterable<Store> _values, Context _context) throws IOException, InterruptedException {
       int max = 0;
       String brewing = "";
@@ -188,7 +186,7 @@ public class BestIPA {
   //=================================================================================================
   // Second job
   //=================================================================================================
-  public static class StyleRemapper extends Mapper<Object, Text, Text, Text>{
+  private static class StyleRemapper extends Mapper<Object, Text, Text, Text>{
       
     public void map(Object _key, Text _value, Context _context) throws IOException, InterruptedException {
       String[] line = _value.toString().split(s_SPLIT);
@@ -199,7 +197,7 @@ public class BestIPA {
 
   }
 
-  public static class BestBrewingReducer extends Reducer<Text,Text,Text,Text> {
+  private static class BestBrewingReducer extends Reducer<Text,Text,Text,Text> {
     
     public void reduce(Text _key, Iterable<Text> _values, Context _context) throws IOException, InterruptedException {
       ArrayList<String> brew = new ArrayList();
