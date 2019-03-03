@@ -1,10 +1,9 @@
 *.class
 *.jar
 .idea/*
-output/*
 
-bestIPAResult/
-darkestBeerResult/
+*Result/
+launch*.sh
 
 hadoop-2\.8\.0/logs/
 
