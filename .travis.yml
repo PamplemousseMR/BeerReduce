@@ -1,0 +1,53 @@
+language: java
+sudo: true
+
+matrix:
+  include:
+    #==============================
+    #
+    #     linux oracle
+    #
+    #==============================
+
+    - os: linux
+      compiler: javac
+      jdk: oraclejdk8
+      env: JAVA_IMPLEMENTATION=java-8-oracle
+
+    - os: linux
+      compiler: javac
+      jdk: oraclejdk9
+      env: JAVA_IMPLEMENTATION=java-9-oracle
+
+    #==============================
+    #
+    #     linux open
+    #
+    #==============================
+
+    - os: linux
+      compiler: javac
+      jdk: openjdk7
+      env: JAVA_IMPLEMENTATION=java-7-openjdk-amd64
+
+    - os: linux
+      compiler: javac
+      jdk: openjdk8
+      env: JAVA_IMPLEMENTATION=java-8-openjdk-amd64
+
+before_install:
+  - eval
+  - mkdir beerReduceBin
+  - chmod 711 hadoop-2.8.0/bin/hadoop
+
+before_script:
+  - export JAVA_HOME=/usr/lib/jvm/${JAVA_IMPLEMENTATION}
+  - export HADOOP_CLASSPATH=$JAVA_HOME/lib/tools.jar
+  - export HADOOP_HOME=$PWD/hadoop-2.8.0
+  - export PATH=$PATH:$HADOOP_HOME/bin/:$JAVA_HOME/bin/
+
+script:
+  - hadoop com.sun.tools.javac.Main -d beerReduceBin src/BestIPA.java
+  - jar -cvf beerReduceBin/bestIPA.jar -C beerReduceBin/ .
+  - hadoop com.sun.tools.javac.Main -d beerReduceBin src/DarkestBeer.java
+  - jar -cvf beerReduceBin/darkestBeer.jar -C beerReduceBin/ .
