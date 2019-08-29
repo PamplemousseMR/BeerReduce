@@ -1,8 +1,9 @@
-language: java
-sudo: true
+     language: java
+sudo: false
 
 matrix:
   include:
+
     #==============================
     #
     #     linux oracle
@@ -11,13 +12,13 @@ matrix:
 
     - os: linux
       compiler: javac
-      jdk: oraclejdk8
-      env: JAVA_IMPLEMENTATION=java-8-oracle
+      jdk: oraclejdk9
+      env: JAVA_IMPLEMENTATION=java-9-oracle
 
     - os: linux
       compiler: javac
-      jdk: oraclejdk9
-      env: JAVA_IMPLEMENTATION=java-9-oracle
+      jdk: oraclejdk11
+      env: JAVA_IMPLEMENTATION=java-11-oracle
 
     #==============================
     #
@@ -27,13 +28,23 @@ matrix:
 
     - os: linux
       compiler: javac
-      jdk: openjdk7
-      env: JAVA_IMPLEMENTATION=java-7-openjdk-amd64
+      jdk: openjdk8
+      env: JAVA_IMPLEMENTATION=java-8-openjdk-amd64
 
     - os: linux
       compiler: javac
-      jdk: openjdk8
-      env: JAVA_IMPLEMENTATION=java-8-openjdk-amd64
+      jdk: openjdk9
+      env: JAVA_IMPLEMENTATION=java-9-openjdk-amd64
+
+    - os: linux
+      compiler: javac
+      jdk: openjdk10
+      env: JAVA_IMPLEMENTATION=java-10-openjdk-amd64
+
+    - os: linux
+      compiler: javac
+      jdk: openjdk11
+      env: JAVA_IMPLEMENTATION=java-11-openjdk-amd64
 
 before_install:
   - eval
