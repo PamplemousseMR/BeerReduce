@@ -6,42 +6,12 @@ matrix:
 
     #==============================
     #
-    #     linux oracle
-    #
-    #==============================
-
-    - os: linux
-      compiler: javac
-      jdk: oraclejdk9
-      env: JAVA_IMPLEMENTATION=java-9-oracle
-
-    - os: linux
-      compiler: javac
-      jdk: oraclejdk11
-      env: JAVA_IMPLEMENTATION=java-11-oracle
-
-    #==============================
-    #
     #     linux open
     #
     #==============================
 
     - os: linux
-      compiler: javac
-      jdk: openjdk8
-      env: JAVA_IMPLEMENTATION=java-8-openjdk-amd64
-
-    - os: linux
-      compiler: javac
-      jdk: openjdk9
-      env: JAVA_IMPLEMENTATION=java-9-openjdk-amd64
-
-    - os: linux
-      compiler: javac
-      jdk: openjdk10
-      env: JAVA_IMPLEMENTATION=java-10-openjdk-amd64
-
-    - os: linux
+      dist: bionic
       compiler: javac
       jdk: openjdk11
       env: JAVA_IMPLEMENTATION=java-11-openjdk-amd64
@@ -56,6 +26,7 @@ before_script:
   - export HADOOP_CLASSPATH=$JAVA_HOME/lib/tools.jar
   - export HADOOP_HOME=$PWD/hadoop-2.8.0
   - export PATH=$PATH:$HADOOP_HOME/bin/:$JAVA_HOME/bin/
+  - ls /usr/lib/jvm/
 
 script:
   - hadoop com.sun.tools.javac.Main -d beerReduceBin src/BestIPA.java
