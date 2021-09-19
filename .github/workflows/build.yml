@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        version: [adoptopenjdk-8-hotspot-amd64, adoptopenjdk-11-hotspot-amd64]
+        
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          mkdir beerReduceBin
+          chmod 711 hadoop-2.8.0/bin/hadoop
+
+          export JAVA_HOME=/usr/lib/jvm/${{ matrix.version }}
+          export HADOOP_CLASSPATH=$JAVA_HOME/lib/tools.jar
+          export HADOOP_HOME=$PWD/hadoop-2.8.0
+          export PATH=$PATH:$HADOOP_HOME/bin/:$JAVA_HOME/bin/
+          ls /usr/lib/jvm/
+          
+          hadoop com.sun.tools.javac.Main -d beerReduceBin src/BestIPA.java
+          jar -cvf beerReduceBin/bestIPA.jar -C beerReduceBin/ .
+          hadoop com.sun.tools.javac.Main -d beerReduceBin src/DarkestBeer.java
+          jar -cvf beerReduceBin/darkestBeer.jar -C beerReduceBin/ .

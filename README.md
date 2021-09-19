@@ -5,9 +5,9 @@ We try to answer the following questions:
 - For each beer family (API, ALE), with which brewing methods do we get the most sweetests beers?
 - For each beer family, how many beer consumed the least amount of water per pound of grain grouped by quarter of beers's color (rounded up) ?
 
-## Travis
+## CI
 
-[![Build Status](https://travis-ci.com/PamplemousseMR/BeerReduce.svg?branch=master)](https://travis-ci.com/PamplemousseMR/BeerReduce)
+![Build Status](https://github.com/PamplemousseMR/BeerReduce/actions/workflows/build.yml/badge.svg)
 
 ## Getting Started
 
